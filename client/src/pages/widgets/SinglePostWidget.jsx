@@ -93,18 +93,21 @@ const SinglePostWidget = ({
   const getLikes = async() => {
 
     if(likeCount > 0){
-      const response = await fetch( serverUrl + `p/${postId}/likes`,{
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-      })
+      // const response = await fetch( serverUrl + `p/${postId}/likes`,{
+      //   method: "GET",
+      //   headers: {
+      //     Authorization: `Bearer ${token}`,
+      //     "Content-Type": "application/json"
+      //   },
+      // })
   
-      if(response.ok){
-        const likeData = await response.json()
-        setLikeData(likeData)
-      }
+      // if(response.ok){
+      //   const likeData = await response.json()
+      //   setLikeData(likeData)
+      // }
+
+          const likeData = [{"_id":"63f19345618edabfc8738eb2","username":"mjherzalla","profilePhotoUrl":"https://i.stack.imgur.com/l60Hf.png","id":"63f19345618edabfc8738eb2"}]
+          setLikeData(likeData)
     }
 
 

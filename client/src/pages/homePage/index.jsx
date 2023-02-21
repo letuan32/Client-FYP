@@ -11,7 +11,7 @@ const HomePage = () => {
   const isNonMobileScreens = useMediaQuery("(min-width: 1000px)");
 
   const { username, profilePhotoUrl} = useSelector((state) => state.user)
- 
+
 
   return (
     <Box>
@@ -24,7 +24,7 @@ const HomePage = () => {
           justifyContent="space-between"
         >
           <Box flexBasis={isNonMobileScreens ? "26%" : undefined}>
-            <UserWidget username={username} profilePhotoUrl={profilePhotoUrl}/>
+            {/*<UserWidget username={username} profilePhotoUrl={profilePhotoUrl}/>*/}
           </Box>
 
           <Box
@@ -36,9 +36,9 @@ const HomePage = () => {
           </Box>
           {isNonMobileScreens && (
             <Box flexBasis="26%">
-              <AdWidget/>
-              <Box m="2rem 0"/>   
-              <FollowingListWidget username={username}/>
+              {/*<AdWidget/>*/}
+              {/*<Box m="2rem 0"/>   */}
+              {/*<FollowingListWidget username={username}/>*/}
             </Box>
           )}
         </Box>

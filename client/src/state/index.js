@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import jwt from "jwt-decode";
 
 const initialState = {
     mode: "light",
@@ -38,7 +39,24 @@ export const authSlice = createSlice({
                 }
             },
             setPerson: (state, action) => {
-                state.person = action.payload.person;
+
+                var loggedInUser = action.payload.loggedIn
+                const userClaims = jwt(loggedInUser.idToken);
+                var per = {
+                    _id: userClaims.user_id,
+                    username: loggedInUser.displayName,
+                    email: loggedInUser.email,
+                    followings: [],
+                    followers: [],
+                    profilePhotoUrl: loggedInUser.profilePicture,
+                    location: "VN",
+                    occupation: "",
+                    viewedProfile: 3706,
+                    impressions: 5741,
+                    id: userClaims.user_id
+                }
+                state.person =  per
+                console.log(per)
             },
             setPersonFollowing: (state, action) => {
                 if (state.person) {

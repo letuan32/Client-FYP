@@ -11,6 +11,7 @@ import {
 } from "@mui/material";
 
 
+
 import { Formik } from "formik";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -47,11 +48,12 @@ const Form = () => {
   let isLogin = pageType === "login";
   let isRegister = pageType === "register";
 
-  const serverUrl =  process.env.REACT_APP_ENV === "Development" ? "http://localhost:3001/" : process.env.REACT_APP_SERVER_URL 
+  const firebaseIdentityUrl = process.env.REACT_APP_GG_IDENTITY_TOOLKIT_URL;
+  console.log(firebaseIdentityUrl);
+
+  const serverUrl =  process.env.REACT_APP_ENV === "Development" ? "http://localhost:3001/" : "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyDC-9t_7hpKVhgnjs6T_67CAALOk--su2A"
 
 
-
-  
   const register = async (values, onSubmitProps) => {
         const { username, email, location, occupation, password} = values;
         setLoading(true)
@@ -99,7 +101,7 @@ const Form = () => {
         const { email, password } = values
 
         const loggedInResponse = await fetch(
-          serverUrl + 'login', 
+            firebaseIdentityUrl + 'accounts:signInWithPassword?key=' + process.env.REACT_APP_FIREBASE_AUTHEN_KEY,
           {
           method: "POST",
           body: JSON.stringify({ email, password}),
@@ -111,13 +113,12 @@ const Form = () => {
 
           dispatch(
             setLogin({
-              user: loggedIn.user,
-              token: loggedIn.token,
+              user: loggedIn.displayName,
+              token: loggedIn.idToken,
             })
           );
 
-            dispatch(setPerson({ person: loggedIn.user}))
-
+            dispatch(setPerson({ loggedIn: loggedIn}))
             navigate("/")
         }else{
         setLoginErr("Incorret Credentials")
