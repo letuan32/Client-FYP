@@ -1,4 +1,6 @@
 import { format, getTime, formatDistanceToNow } from 'date-fns';
+const { Timestamp } = require('google-protobuf/google/protobuf/timestamp_pb');
+
 
 // ----------------------------------------------------------------------
 
@@ -52,9 +54,14 @@ export function formatTime(date){
     } else{
       return dateFormat
     }
+}
 
+export function timeStampToDate(timeStamp) {
+  const timestamp = new Timestamp();
+  timestamp.setSeconds(timeStamp.seconds);
+  timestamp.setNanos(timeStamp.nanos);
 
-    
+  const date = timestamp.toDate();
+  return date;
 
- 
 }

@@ -1,17 +1,14 @@
 import { useState } from "react";
-
 import { useDispatch, useSelector } from 'react-redux';
 import { setPost} from "../../state";
-
-import { fToNow } from "../../utils/formatDate";
+import {fToNow, timeStampToDate} from "../../utils/formatDate";
 
 import {
-  ChatBubbleOutlineOutlined,
+    ChatBubbleOutlineOutlined,
     FavoriteBorderOutlined,
-    FavoriteOutlined,
+    FavoriteOutlined, PaymentOutlined,
     ShareOutlined
 } from "@mui/icons-material";
-
 
 import {
     IconButton,
@@ -20,17 +17,10 @@ import {
     Box,
     useMediaQuery
 } from "@mui/material";
-
 import FlexBetween from "../../components/CustomStyledComponents/FlexBetween";
 import Following from "../../components/Following";
 import LikeBox from "../../components/LikeBox"
-
-
 import CommentBox from "../../components/Comment/Comment";
-
-
-
-
 import { useEffect } from "react";
 
 
@@ -71,9 +61,9 @@ const SinglePostWidget = ({
   const { main, medium} = palette.neutral;
 
 
-  const serverUrl =  process.env.REACT_APP_ENV === "Development" ? "http://localhost:3001/" : process.env.REACT_APP_SERVER_URL 
+    const serverUrl =  process.env.REACT_APP_ENV === "Development" ? "https://localhost:7010/" : process.env.REACT_APP_API_GATEWAY
 
-
+    
   const addRemoveLike  = async() => {
     const response = await fetch( serverUrl + `p/${postId}/likes`,{
       method: "PATCH",
@@ -109,9 +99,28 @@ const SinglePostWidget = ({
           const likeData = [{"_id":"63f19345618edabfc8738eb2","username":"mjherzalla","profilePhotoUrl":"https://i.stack.imgur.com/l60Hf.png","id":"63f19345618edabfc8738eb2"}]
           setLikeData(likeData)
     }
-
-
   }
+
+  const handleDonation = async (postId) =>
+    {
+        const response = await fetch( serverUrl + `post/bankingDescription?postId?` + postId,{
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+        })
+        if(response.ok){
+            const bakingData = await response.json();
+            console.log('File: SinglePostWidget.jsx, Line 115: ' + bakingData.description);
+            const description = bakingData.description;
+            const url = `https://img.vietqr.io/image/vietinbank-113366668888-compact2.jpg&addInfo=${description}&accountName=T%20Charity`;
+            window.open(url, '_blank');
+        }
+
+
+
+    }
 
   const handleCommentToggle = () =>{
      setIsComments(!isComments)
@@ -201,6 +210,12 @@ const SinglePostWidget = ({
                   </IconButton>
                   <Typography>{commentCount}</Typography>
                 </FlexBetween>
+                  <FlexBetween gap="0.3rem">
+                      <IconButton onClick={() => handleDonation(postId)}>
+                          <PaymentOutlined />
+                      </IconButton>
+                      <Typography>{commentCount}</Typography>
+                  </FlexBetween>
               </FlexBetween>
 
               <IconButton>
