@@ -104,12 +104,13 @@ const Form = () => {
             firebaseIdentityUrl + 'accounts:signInWithPassword?key=' + process.env.REACT_APP_FIREBASE_AUTHEN_KEY,
           {
           method: "POST",
-          body: JSON.stringify({ email, password}),
+          body: JSON.stringify({ email, password, returnSecureToken: true}),
           headers: { "Content-Type": "application/json" }
         });
 
         if(loggedInResponse.ok){
           const loggedIn = await loggedInResponse.json();
+          console.log('File: index.jsx, Line 113: ' + JSON.stringify(loggedIn));
 
           dispatch(
             setLogin({

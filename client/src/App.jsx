@@ -22,6 +22,9 @@ import { themeSettings } from "./utils/theme";
 import { setLogout } from './state'
 
 import useTokenExpiration from './utils/checkToken'
+import PaymentPage from "./pages/paymentPage/PostDeatailPage";
+import Payment from "./components/Payment";
+import PostDetailPage from "./pages/paymentPage/PostDeatailPage";
 
 
 const App = () => { 
@@ -52,6 +55,15 @@ const App = () => {
             <Route path="/profile">
                 <Route path=":username" element={isLoggedIn ? <ProfilePage/> : <Navigate to="/login" />} />
                 <Route path="" element={isLoggedIn ? <ProfilePage/> : <Navigate to="/login" />} />
+            </Route>
+
+            <Route path="/payment">
+              {/*<Route path=":username" element={isLoggedIn ? <ProfilePage/> : <Navigate to="/login" />} />*/}
+              <Route path="" element={isLoggedIn ? <PostDetailPage/> : <Navigate to="/login" />} />
+            </Route>
+
+            <Route path="/post">
+              <Route path=":id" element={isLoggedIn ? <PostDetailPage/> : <Navigate to="/login" />} />
             </Route>
 
             <Route

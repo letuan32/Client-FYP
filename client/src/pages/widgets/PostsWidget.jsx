@@ -84,6 +84,14 @@ const PostsWidget = ({ username, isProfile = false}) => {
         )
         )
         }
+           <div>
+               <div id="paypal-button-container" />
+
+               <script type="text/javascript">
+                   paypal.Buttons().render('#paypal-button-container');
+               </script>
+           </div>
+
        </>
     )
 }

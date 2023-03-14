@@ -15,13 +15,17 @@ import {
     Typography,
     useTheme,
     Box,
-    useMediaQuery
+    useMediaQuery, Modal, Button, ListItem, ListItemAvatar, ListItemText, TextField, InputAdornment
 } from "@mui/material";
 import FlexBetween from "../../components/CustomStyledComponents/FlexBetween";
 import Following from "../../components/Following";
 import LikeBox from "../../components/LikeBox"
 import CommentBox from "../../components/Comment/Comment";
 import { useEffect } from "react";
+import Divider from "@mui/material/Divider";
+import Avatar from "@mui/material/Avatar";
+import List from "@mui/material/List";
+import Payment from "../../components/Payment";
 
 
 
@@ -40,7 +44,8 @@ const SinglePostWidget = ({
   const [isComments, setIsComments] = useState(false)
   const [likeData, setLikeData] = useState(null)
   const [isLongCaption, setIsLongCaption] = useState(false);
-
+  const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
+  const [amount, setAmount] = useState('');
   const isNonMobileScreens = useMediaQuery("(min-width: 800px)");
 
 
@@ -103,6 +108,7 @@ const SinglePostWidget = ({
 
   const handleDonation = async (postId) =>
     {
+        setIsDonationModalOpen(true);
         const response = await fetch( serverUrl + `post/bankingDescription?postId?` + postId,{
           method: "GET",
           headers: {
@@ -110,13 +116,13 @@ const SinglePostWidget = ({
             "Content-Type": "application/json"
           },
         })
-        if(response.ok){
-            const bakingData = await response.json();
-            console.log('File: SinglePostWidget.jsx, Line 115: ' + bakingData.description);
-            const description = bakingData.description;
-            const url = `https://img.vietqr.io/image/vietinbank-113366668888-compact2.jpg&addInfo=${description}&accountName=T%20Charity`;
-            window.open(url, '_blank');
-        }
+        // if(response.ok){
+        //     const bakingData = await response.json();
+        //     console.log('File: SinglePostWidget.jsx, Line 115: ' + bakingData.description);
+        //     const description = bakingData.description;
+        //     const url = `https://img.vietqr.io/image/vietinbank-113366668888-compact2.jpg&addInfo=${description}&accountName=T%20Charity`;
+        //     window.open(url, '_blank');
+        // }
 
 
 
@@ -129,7 +135,13 @@ const SinglePostWidget = ({
   const handleCaptionToggle = () => {
      setIsLongCaption(!isLongCaption)
   }
+    const handleCloseDonationModal = () => {
+        setIsDonationModalOpen(false);
+    };
 
+    const handleAmountChange = (event) => {
+        setAmount(event.target.value);
+    };
   useEffect(() => {
     getLikes();
   },[])
@@ -156,13 +168,11 @@ const SinglePostWidget = ({
                 subtitle={location} 
                 userProfilePhotoUrl={userProfilePhoto}
                 isAuthor={isAuthor}
-            /> 
-
+            />
         {/* post caption  */}
         <Typography color={main} sx={{ mt: "1rem"}}>
               {caption.length > 100 ? isLongCaption ? caption : `${caption.substring(0, 100)}...` : caption}
         </Typography>
-
         { caption.length > 100 ?  (
         <Typography 
         onClick={handleCaptionToggle}
@@ -177,9 +187,6 @@ const SinglePostWidget = ({
         ) : null}     
       </Box>     
 
-
-
-      
       {postImageUrls.length ? (
         <div style={{ display: "flex" , justifyContent: "center", alignItems:"center"}}>
           <img src={postImageUrls[0].url} alt={postImageUrls[0].filename} style={{
@@ -190,7 +197,6 @@ const SinglePostWidget = ({
           }}/>
         </div>
       ) : null}
-
       <FlexBetween mt="0.25rem">
               <FlexBetween gap="1rem">
                 <FlexBetween gap="0.3rem">
@@ -221,6 +227,30 @@ const SinglePostWidget = ({
               <IconButton>
                 <ShareOutlined />
               </IconButton>
+
+          <Modal
+              open={isDonationModalOpen}
+              onClose={handleCloseDonationModal}
+              aria-labelledby="donation-modal-title"
+              aria-describedby="donation-modal-description"
+          >
+              <Box
+                  sx={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
+                      bgcolor: "background.paper",
+                      boxShadow: 24,
+                      p: 10,
+                  }}
+              >
+                  <Payment/>
+                  <Button onClick={handleCloseDonationModal} sx={{ mt: 2 }}>
+                      Close Modal
+                  </Button>
+              </Box>
+          </Modal>
       </FlexBetween>
 
       <Box
