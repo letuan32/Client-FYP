@@ -105,7 +105,8 @@ const PostDetailPage = () => {
         })
 
         const updatedPost = await response.json();
-
+        console.log('File: PostDeatailPage.jsx, Line 109: ' + updatedPost.redirecUrl );
+        window.open(updatedPost.redirecUrl, '_blank', 'noreferrer');
     };
 
 
