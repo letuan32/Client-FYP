@@ -1,5 +1,7 @@
 import { useState } from 'react'
-
+import {ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+// import { storage } from '../../firebase';
+import { storage } from '../../firebase/firebase';
 import {
     EditOutlined
     ,DeleteOutlined
@@ -28,14 +30,13 @@ import UserAvatar from '../../components/CustomStyledComponents/UserAvatar';
 import { setPosts } from "../../state" 
 import { useDispatch, useSelector } from 'react-redux';
 import WidgetWrapper from '../../components/CustomStyledComponents/WidgetWrapper';
-
 import { postSchema } from '../../utils/Schemas';
 
 const MyPostWidget = ({ profilePhotoUrl }) => {
     const dispatch = useDispatch()
     const [imageUrls, setImageUrls] = useState([]);
     const [errors, setErrors] = useState({});
-    const [isImage, setIsImage] = useState(false);
+    const [uploadedUrls, setUploadUrls] = useState([]);
     const [image, setImage] =useState(null);
     const [post, setPost] = useState("");
     const { palette } = useTheme();
@@ -55,13 +56,16 @@ const MyPostWidget = ({ profilePhotoUrl }) => {
         })));
 
         setImage(acceptedFiles)
-        
+        console.log("Loaded file")
+
+
     };
    
 
     const handlePost = async (e) => {
 
-      
+        uploadFilesToFirebase();
+
         const formData = new FormData();
         formData.append("username", username);
         formData.append('caption', post);
@@ -69,15 +73,7 @@ const MyPostWidget = ({ profilePhotoUrl }) => {
         const serverUrl =  process.env.REACT_APP_ENV === "Development" ? "http://localhost:3001/" : process.env.REACT_APP_SERVER_URL 
 
 
-   
 
-        if(imageUrls){
-          imageUrls.forEach((image) => {
-            formData.append('postImageUrls', image);
-          })
-        }
-
-        
         const response = await fetch( serverUrl + `p`,{
           method: "POST",
           headers: { Authorization: `Bearer ${token}`},
@@ -92,6 +88,27 @@ const MyPostWidget = ({ profilePhotoUrl }) => {
         dispatch(setPosts({ posts }));
         setImage(null);
         setPost("")
+    }
+
+    const uploadFilesToFirebase = () => {
+        var progress = 0; // initialize progress
+        var count = imageUrls.length; // count the number of files
+        imageUrls.forEach((file) => {
+            const fileRef = ref(storage, `user-resource/${file.name}`)
+            const uploadTask = uploadBytesResumable(fileRef, file)
+
+                uploadTask.on('state_changed', (snapshot) => {
+                progress += snapshot.bytesTransferred / snapshot.totalBytes;
+            }, (error) => {
+                console.log("error :(")
+            }, () => {
+                console.log("success!!")
+                getDownloadURL(uploadTask.snapshot.ref).then(downloadURL =>{
+                    // Add the downloadURL to the uploadedUrls array
+                    setUploadUrls([...uploadedUrls, downloadURL])
+                })
+            })
+        })
     }
     
     const handleSubmit = async(e) => {
@@ -135,8 +152,8 @@ const MyPostWidget = ({ profilePhotoUrl }) => {
     <WidgetWrapper m="0 0 2rem 0" sx={{ textAlign: "center"}}>
       <FlexBetween gap="1.5rem">
         <UserAvatar image={profilePhotoUrl}/>
-        <InputBase 
-          placeholder="What's on your mind?....."
+        <InputBase
+          placeholder="Share your situation"
           onChange={handleChange}
           onBlur={handleBlur}
           value={post}
@@ -151,7 +168,7 @@ const MyPostWidget = ({ profilePhotoUrl }) => {
       {errors.caption && (
         <Typography sx={{fontSize: "0.69rem" }} variant='small' color="error">{errors.caption}</Typography>
       )}
-        {isImage && (
+        {(
           <Box
             border={`1px solid ${medium}`}
             borderRadius="5px"
@@ -159,7 +176,7 @@ const MyPostWidget = ({ profilePhotoUrl }) => {
             p="1rem"
           >
             <Dropzone
-              acceptedFiles=".jpg,.jpeg,.png"
+              acceptedFiles=".jpg,.jpeg,.png,.mp4"
               multiple={true}
               onDrop={handleDrop}
             >
@@ -216,38 +233,8 @@ const MyPostWidget = ({ profilePhotoUrl }) => {
         <Divider sx={{margin: "1.25rem 0"}} />
 
          <FlexBetween>
-              <FlexBetween gap="0.25rem" onClick={() =>setIsImage(!isImage)}>
-                    <ImageOutlined sx={{color: mediumMain }}/>
-                    <Typography
-                      color={{mediumMain}}
-                      sx={{ "&:hover": { cursor: "pointer", color: medium}}}
-                    >
-                      Image
-                    </Typography>
+              <FlexBetween gap="0.25rem">
               </FlexBetween>
-
-              { isNonMobileScreens ? (
-                <>
-                  <FlexBetween gap="0.25rem">
-                    <GifBoxOutlined sx={{color: mediumMain }} />
-                    <Typography color={mediumMain}>Clip</Typography>
-                  </FlexBetween>
-
-                  <FlexBetween gap="0.25rem">
-                    <AttachFileOutlined sx={{color: mediumMain }} />
-                    <Typography color={mediumMain}>Attachment</Typography>
-                  </FlexBetween>
-
-                  <FlexBetween gap="0.25rem">
-                    <MicOutlined sx={{color: mediumMain }} />
-                    <Typography color={mediumMain}>Audio</Typography>
-                  </FlexBetween>
-                </>
-                 ) : (
-                <FlexBetween gap="0.25rem">
-                  <MoreHorizOutlined sx={{ color: mediumMain}}/>
-                </FlexBetween>
-              )}
 
               <Button
                 disabled={loading || !post}

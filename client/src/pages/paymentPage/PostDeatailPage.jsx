@@ -82,7 +82,6 @@ const PostDetailPage = () => {
     const handleAmountChange = (event) => {
         setAmount(event.target.value);
         // TODO: Validate
-
     };
     const paymentOptionsForCurrency = paymentOptions[currency];
 
