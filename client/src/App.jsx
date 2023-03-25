@@ -23,7 +23,9 @@ import { themeSettings } from "./utils/theme";
 import { setLogout } from './state'
 
 import useTokenExpiration from './utils/checkToken'
-import PostDetailPage from "./pages/paymentPage/PostDeatailPage";
+import PostDonation from "./pages/postPage/PostDeatailPage";
+import Navbar from "./components/navbar";
+import TermsAndConditionsPage from "./pages/policypage";
 
 
 const App = () => { 
@@ -45,6 +47,7 @@ const App = () => {
           <CssBaseline/>
           <Routes>
             <Route path='/' element={isLoggedIn ? <HomePage/> : <Navigate to="/login" />}/>
+            <Route path='/policy' element={<TermsAndConditionsPage/>}/>
 
             <Route path='/'>
                 <Route path="login" element={!isLoggedIn ? <LoginPage/> : <Navigate to="/" />} />
@@ -52,20 +55,16 @@ const App = () => {
             </Route>
 
             <Route path="/profile">
+
                 <Route path=":username" element={isLoggedIn ? <ProfilePage/> : <Navigate to="/login" />} />
                 <Route path="" element={isLoggedIn ? <ProfilePage/> : <Navigate to="/login" />} />
             </Route>
 
-            <Route path="/payment">
-              {/*<Route path=":username" element={isLoggedIn ? <ProfilePage/> : <Navigate to="/login" />} />*/}
-              <Route path="" element={isLoggedIn ? <PostDetailPage/> : <Navigate to="/login" />} />
-            </Route>
-
             <Route path="/post">
-              <Route path=":id" element={isLoggedIn ? <PostDetailPage/> : <Navigate to="/login" />} />
+              <Route path=":id" element={isLoggedIn ? <PostDonation/> : <Navigate to="/login" />} />
               <Route path="" element={isLoggedIn ? <PostForm/> : <Navigate to="/login" />} />
-
             </Route>
+
 
             <Route
                 path="*"

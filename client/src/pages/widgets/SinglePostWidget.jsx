@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useDispatch, useSelector } from 'react-redux';
 import { setPost} from "../../state";
@@ -7,7 +8,10 @@ import {
     ChatBubbleOutlineOutlined,
     FavoriteBorderOutlined,
     FavoriteOutlined, PaymentOutlined,
-    ShareOutlined
+    ShareOutlined,
+    RequestQuoteOutlined,
+    PriceChangeOutlined, PriceCheckOutlined,
+    VolunteerActivismOutlined
 } from "@mui/icons-material";
 
 import {
@@ -22,10 +26,6 @@ import Following from "../../components/Following";
 import LikeBox from "../../components/LikeBox"
 import CommentBox from "../../components/Comment/Comment";
 import { useEffect } from "react";
-import Divider from "@mui/material/Divider";
-import Avatar from "@mui/material/Avatar";
-import List from "@mui/material/List";
-import Payment from "../../components/Payment";
 
 
 
@@ -41,11 +41,10 @@ const SinglePostWidget = ({
   createdAt,
   commentCount,
 }) => {
+    const navigate = useNavigate();
   const [isComments, setIsComments] = useState(false)
   const [likeData, setLikeData] = useState(null)
   const [isLongCaption, setIsLongCaption] = useState(false);
-  const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
-  const [amount, setAmount] = useState('');
   const isNonMobileScreens = useMediaQuery("(min-width: 800px)");
 
 
@@ -106,28 +105,6 @@ const SinglePostWidget = ({
     }
   }
 
-  const handleDonation = async (postId) =>
-    {
-        setIsDonationModalOpen(true);
-        const response = await fetch( serverUrl + `post/bankingDescription?postId?` + postId,{
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          },
-        })
-        // if(response.ok){
-        //     const bakingData = await response.json();
-        //     console.log('File: SinglePostWidget.jsx, Line 115: ' + bakingData.description);
-        //     const description = bakingData.description;
-        //     const url = `https://img.vietqr.io/image/vietinbank-113366668888-compact2.jpg&addInfo=${description}&accountName=T%20Charity`;
-        //     window.open(url, '_blank');
-        // }
-
-
-
-    }
-
   const handleCommentToggle = () =>{
      setIsComments(!isComments)
   }
@@ -135,13 +112,6 @@ const SinglePostWidget = ({
   const handleCaptionToggle = () => {
      setIsLongCaption(!isLongCaption)
   }
-    const handleCloseDonationModal = () => {
-        setIsDonationModalOpen(false);
-    };
-
-    const handleAmountChange = (event) => {
-        setAmount(event.target.value);
-    };
   useEffect(() => {
     getLikes();
   },[])
@@ -162,14 +132,13 @@ const SinglePostWidget = ({
         padding:!isNonMobileScreens ? "0 0.75rem" : ""
       }}
      >
-        <Following 
+        <Following
                 followingId={postUserId} 
                 name={postAuthorUsername} 
                 subtitle={location} 
                 userProfilePhotoUrl={userProfilePhoto}
                 isAuthor={isAuthor}
             />
-        {/* post caption  */}
         <Typography color={main} sx={{ mt: "1rem"}}>
               {caption.length > 100 ? isLongCaption ? caption : `${caption.substring(0, 100)}...` : caption}
         </Typography>
@@ -216,43 +185,43 @@ const SinglePostWidget = ({
                   </IconButton>
                   <Typography>{commentCount}</Typography>
                 </FlexBetween>
-                  <FlexBetween gap="0.3rem">
-                      <IconButton onClick={() => handleDonation(postId)}>
-                          <PaymentOutlined />
-                      </IconButton>
-                      <Typography>{commentCount}</Typography>
-                  </FlexBetween>
               </FlexBetween>
 
               <IconButton>
                 <ShareOutlined />
               </IconButton>
-
-          <Modal
-              open={isDonationModalOpen}
-              onClose={handleCloseDonationModal}
-              aria-labelledby="donation-modal-title"
-              aria-describedby="donation-modal-description"
-          >
-              <Box
-                  sx={{
-                      position: "absolute",
-                      top: "50%",
-                      left: "50%",
-                      transform: "translate(-50%, -50%)",
-                      bgcolor: "background.paper",
-                      boxShadow: 24,
-                      p: 10,
-                  }}
-              >
-                  <Payment/>
-                  <Button onClick={handleCloseDonationModal} sx={{ mt: 2 }}>
-                      Close Modal
-                  </Button>
-              </Box>
-          </Modal>
       </FlexBetween>
 
+        {/*TODO: Data from server*/}
+        <FlexBetween mt="0.25rem">
+            <FlexBetween gap="1rem">
+                <FlexBetween gap="0.3rem">
+                    <IconButton>
+                        <RequestQuoteOutlined></RequestQuoteOutlined>
+                    </IconButton>
+                    <Typography>100000 VND</Typography>
+                </FlexBetween>
+
+                <FlexBetween gap="0.3rem">
+                    <IconButton>
+                        <PriceCheckOutlined></PriceCheckOutlined>
+                    </IconButton>
+                    <Typography>100000 VND</Typography>
+                </FlexBetween>
+
+                <FlexBetween gap="0.3rem">
+                    <IconButton
+                        onClick={() => {
+                            navigate(`/post/${postId}}`);
+                            navigate(0);
+                        }}>
+                        <VolunteerActivismOutlined></VolunteerActivismOutlined>
+                        <Typography>Donation</Typography>
+
+                    </IconButton>
+                </FlexBetween>
+            </FlexBetween>
+        </FlexBetween>
       <Box
       sx={{
         padding:!isNonMobileScreens ? "0 0.75rem" : ""
@@ -276,8 +245,8 @@ const SinglePostWidget = ({
       ): null}
 
 
-          
-                
+
+
     <Typography
         fontWeight="200"
         fontSize="0.79rem"
@@ -285,14 +254,8 @@ const SinglePostWidget = ({
       >Posted {fToNow(createdAt)}</Typography>
 
       </Box>
-
-        
-
-
-
-      
-      { isComments && (<CommentBox postId={postId} 
-      commentCount={commentCount} 
+      { isComments && (<CommentBox postId={postId}
+      commentCount={commentCount}
       isNonMobileScreens={isNonMobileScreens}/>)}
         
     </Box>

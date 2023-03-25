@@ -12,7 +12,7 @@ import {
     RadioGroup,
     Radio,
     FormControl,
-    MenuItem, useMediaQuery, IconButton, Avatar, useTheme, List, ListItem, ListItemAvatar, ListItemText,
+    MenuItem, useMediaQuery, IconButton, Avatar, useTheme, List, ListItem, ListItemAvatar, ListItemText, FormGroup,
 } from "@mui/material";
 import FolderIcon from '@mui/icons-material/Folder';
 import React, {useState} from "react";
@@ -24,6 +24,8 @@ import {setPosts} from "../../state";
 import {getDownloadURL, ref, uploadBytesResumable} from "firebase/storage";
 import {storage} from "../../firebase/firebase";
 import {postSchema} from "../../utils/Schemas";
+import Navbar from "../../components/navbar";
+import {useNavigate} from "react-router-dom";
 
 const currencies = [
     {
@@ -72,7 +74,7 @@ const PostForm = () => {
         checkedB: false,
         checkedC: false,
     });
-
+const navigate = useNavigate();
     const acceptMediaExtensions = {
         extension: [".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp4", ".webm"],
         mime: [
@@ -231,6 +233,7 @@ const PostForm = () => {
     return (
         <Box
             >
+            <Navbar/>
             <Card
                 variant="outlined"
                 sx={{
@@ -462,10 +465,20 @@ const PostForm = () => {
                         </Dropzone>
 
 
+                        <FormControlLabel
+                            control={<Checkbox defaultChecked />}
+                            label={
+                                <>
+                                    I have read and agree with{' '}
+                                    <a target={"_blank"} onClick={navigate(`/policy`)}>tern and policy</a>
+                                </>
+                            }
+                        />
                         <div style={{marginTop: "1rem"}}>
                             <Button color="primary" variant="contained">
                                 Submit
                             </Button>
+
                         </div>
                     </form>
                 </CardContent>

@@ -53,7 +53,7 @@ function getSteps() {
 
 const serverUrl =  process.env.REACT_APP_API_GATEWAY
 
-const PostDetailPage = () => {
+const PostDonation = () => {
     const isNonMobileScreens = useMediaQuery("(min-width: 1000px)");
     const [activeStep, setActiveStep] = useState(0);
     const [currency, setCurrency] = useState(currencies[0]);
@@ -203,4 +203,4 @@ const PostDetailPage = () => {
         </Box>
     );
 }
-export default PostDetailPage
+export default PostDonation
