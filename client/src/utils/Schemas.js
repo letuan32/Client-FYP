@@ -37,18 +37,21 @@ export const loginSchema = yup.object().shape({
     // ),
 });
 
-export  const postSchema = yup.object().shape({
-  caption: yup.string()
-      .required('Caption is required')
-      .trim()
-      .max(250, 'Caption must be less than 250 characters')
-      .min(1, 'Caption must be at least 1 character')
-      .matches(
-        /^[a-zA-Z0-9!\(\)\-\.\?\[\]\_\`\~\;\:\!\@\#\$\%\^\&\*\+\= ',"]+$/,
-          'Caption can only contain letters, numbers, spaces, and the following special characters: !()-.[]_`~;:!@#$%^&*+='
-      ),
-  images: yup
-  .array()
-  .of(yup.mixed())
-  .max(5, 'Not more than 5 images are accepted'),
+export const postSchema = yup.object().shape({
+    caption: yup.string()
+        .required('Caption is required')
+        .trim()
+        .max(250, 'Caption must be less than 250 characters')
+        .min(1, 'Caption must be at least 1 character')
+        .matches(
+            /^[a-zA-Z0-9!\(\)\-\.\?\[\]\_\`\~\;\:\!\@\#\$\%\^\&\*\+\= ',"]+$/,
+            'Caption can only contain letters, numbers, spaces, and the following special characters: !()-.[]_`~;:!@#$%^&*+='
+        ),
+    medias: yup
+        .array()
+        .of(yup.mixed()),
+
+    documents: yup
+        .array()
+        .of(yup.mixed())
 });

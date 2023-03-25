@@ -8,6 +8,7 @@ import {
 import HomePage from './pages/homePage'
 import LoginPage from './pages/loginPage'
 import ProfilePage from './pages/profilePage'
+import PostForm from './pages/postPage/PostForm'
 
 
 
@@ -22,8 +23,6 @@ import { themeSettings } from "./utils/theme";
 import { setLogout } from './state'
 
 import useTokenExpiration from './utils/checkToken'
-import PaymentPage from "./pages/paymentPage/PostDeatailPage";
-import Payment from "./components/Payment";
 import PostDetailPage from "./pages/paymentPage/PostDeatailPage";
 
 
@@ -64,6 +63,8 @@ const App = () => {
 
             <Route path="/post">
               <Route path=":id" element={isLoggedIn ? <PostDetailPage/> : <Navigate to="/login" />} />
+              <Route path="" element={isLoggedIn ? <PostForm/> : <Navigate to="/login" />} />
+
             </Route>
 
             <Route
