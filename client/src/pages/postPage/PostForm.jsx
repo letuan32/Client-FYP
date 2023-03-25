@@ -8,10 +8,6 @@ import {
     FormControlLabel,
     Checkbox,
     Button,
-    Grid,
-    RadioGroup,
-    Radio,
-    FormControl,
     MenuItem, useMediaQuery, IconButton, Avatar, useTheme, List, ListItem, ListItemAvatar, ListItemText, FormGroup,
 } from "@mui/material";
 import FolderIcon from '@mui/icons-material/Folder';
@@ -20,61 +16,67 @@ import FlexBetween from "../../components/CustomStyledComponents/FlexBetween";
 import {DeleteOutlined, EditOutlined} from "@mui/icons-material";
 import Dropzone from "react-dropzone";
 import {useDispatch, useSelector} from "react-redux";
-import {setPosts} from "../../state";
 import {getDownloadURL, ref, uploadBytesResumable} from "firebase/storage";
 import {storage} from "../../firebase/firebase";
 import {postSchema} from "../../utils/Schemas";
 import Navbar from "../../components/navbar";
 import {useNavigate} from "react-router-dom";
+import {stringify, v4 as uuidv4} from 'uuid';
+import {createPostAsync} from "../../apiService/baseApi";
+import {useStore} from "react-redux";
+import setUpInterceptor from "../../apiService/setupInterceptor";
 
 const currencies = [
     {
-        value: 'USD',
+        value: '2',
         label: 'USD',
     },
     {
-        value: 'VND',
+        value: '1',
         label: 'VND',
     }
 ];
 
-const agreement = [
-    "I agree to the terms and conditions",
-    "I agree to the privacy policy",
-    "I confirm that the information provided in this form is true and accurate"];
 const categories = [
     {
 
         label: "Request financial assistance",
-        value: "1",
+        value: '1',
     },
     {
 
         label: "Sharing",
-        value: "2"
+        value: '2'
     },
     {
 
         label: "Fundraising",
-        value: "3",
+        value: '3',
     }
 ];
 
 const PostForm = () => {
+    const store = useStore();
+    setUpInterceptor(store);
     const isNonMobileScreens = useMediaQuery("(min-width: 1000px)");
-    const dispatch = useDispatch()
     const [errors, setErrors] = useState({});
-    const [post, setPost] = useState("");
     const { palette } = useTheme();
     const { username } = useSelector((state) => state.user)
     const token = useSelector((state) => state.token);
+    const refreshToken = useSelector((state) => state.refreshToken);
+
     const [loading, setLoading] = useState(false);
-    const [state, setState] = useState({
-        checkedA: false,
-        checkedB: false,
-        checkedC: false,
+    const [isAgreePolicy, setIsAgreePolicy] = useState(false);
+    const [formState, setFormState] = useState({
+        content: null,
+        location: null,
+        mediaUrls: [],
+        documentUrls: [],
+        expectedAmount: 0,
+        expectedReceivedDate: null,
+        postCategoryEnum: null,
+        currencyEnum: "1"
     });
-const navigate = useNavigate();
     const acceptMediaExtensions = {
         extension: [".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp4", ".webm"],
         mime: [
@@ -93,23 +95,11 @@ const navigate = useNavigate();
 
     const [uploadMediaFiles, setUploadMediaFiles] =useState(null);
     const [uploadMediaFileUrls, setUploadMediaFileUrls] = useState([]);
+    const [downloadMediaFileUrls, setDownloadMediaFileUrls] = useState([]);
 
     const [uploadDocumentFiles, setUploadDocumentFiles] = useState(null);
-    const [uploadDocumentFileUrls, setUploadDocumentFileUrls] =useState(null);
-
-
-    const [value, setValue] = useState("");
-
-    const handleChange2 = (event) => {
-        setValue(event.target.value);
-    };
-
-    const [selectCategory, setSelectCategory] = useState("");
-
-    const handleChange3 = (event) => {
-        setSelectCategory(event.target.value);
-    };
-
+    const [uploadDocumentFileUrls, setUploadDocumentFileUrls] =useState([]);
+    const [downloadDocumentFileUrls, setDownloadDocumentFileUrls] = useState([]);
 
     const handleMediaDrop = (acceptedFiles) => {
         acceptedFiles = acceptedFiles.slice(0,isNonMobileScreens ? 5 : 4)
@@ -132,6 +122,37 @@ const navigate = useNavigate();
 
     };
 
+    const handleFormInputChange = async (event) => {
+        const { name, value } = event.target;
+        setFormState(prevState => ({
+            ...prevState,
+            [name]: value
+        }));
+        try {
+            setLoading(true)
+            await postSchema.validate(
+                {
+                    content: formState.content,
+                    images: uploadMediaFileUrls,
+                    documents: uploadDocumentFileUrls,
+                    expectedAmount: formState.expectedAmount,
+                    expectedReceivedDate: formState.expectedReceivedDate,
+                    currencyEnum: formState.currencyEnum,
+                    location: formState.location,
+                    postCategoryEnum: formState.postCategoryEnum,
+                }, { abortEarly: false });
+            setErrors({});
+            setLoading(false)
+        } catch (err) {
+            const validationErrors = {};
+            err.inner.forEach(error => {
+                validationErrors[error.path] = error.message;
+            });
+            setErrors(validationErrors);
+        }
+
+    };
+
     const handleDocumentDrop = (acceptedFiles) => {
         acceptedFiles = acceptedFiles.slice(0,isNonMobileScreens ? 5 : 4)
 
@@ -140,66 +161,95 @@ const navigate = useNavigate();
         })));
 
         setUploadDocumentFiles(acceptedFiles)
-        console.log("Loaded document file")
     };
 
 
     const handlePost = async (e) => {
-
-        uploadFilesToFirebase();
-
-        const formData = new FormData();
-        formData.append("username", username);
-        formData.append('caption', post);
-
-        const serverUrl =  process.env.REACT_APP_ENV === "Development" ? "http://localhost:3001/" : process.env.REACT_APP_SERVER_URL
+        await uploadFilesToFirebase();
 
 
+        setFormState(prevState => ({
+            ...prevState,
+            'documentUrls': downloadDocumentFileUrls,
+            'mediaUrls': downloadMediaFileUrls
+        }));
 
-        const response = await fetch( serverUrl + `p`,{
-            method: "POST",
-            headers: { Authorization: `Bearer ${token}`},
-            body:formData
-        })
+        const postData = {
+            content: formState.content,
+            location: formState.location,
+            mediaUrls: formState.mediaUrls,
+            documentUrls: formState.documentUrls,
+            expectedAmount: Number(formState.expectedAmount),
+            expectedReceivedDate: formState.expectedReceivedDate,
+            postCategoryEnum: parseInt(formState.postCategoryEnum),
+            currencyEnum: parseInt(formState.currencyEnum),
+        };
+        console.log('File: PostForm.jsx, Line 197:  ');
+        var createPostResult = await createPostAsync(postData, token, refreshToken);
 
-        const posts = await response.json();
-
-
+        const posts = await createPostResult.json();
+        console.log('File: PostForm.jsx, Line 198: handlePost: posts', posts);
         setLoading(false);
 
-        dispatch(setPosts({ posts }));
-        setUploadMediaFiles(null);
-        setPost("")
+        // dispatch(setPosts({ posts }));
+        // setUploadMediaFiles(null);
+        // setPost("")
     }
 
     const uploadFilesToFirebase = () => {
-        var progress = 0; // initialize progress
-        var uploadUrls = uploadMediaFileUrls.concat(uploadDocumentFileUrls);
-        uploadUrls.forEach((file) => {
-            const fileRef = ref(storage, `user-resource/${file.name}`)
-            const uploadTask = uploadBytesResumable(fileRef, file)
+        if(uploadMediaFileUrls !== null) {
+            uploadMediaFileUrls.forEach((file) => {
+                const fileRef = ref(storage, `user-resource/${file.name}_${uuidv4()}`)
+                const uploadTask = uploadBytesResumable(fileRef, file)
 
-            uploadTask.on('state_changed', (snapshot) => {
-                progress += snapshot.bytesTransferred / snapshot.totalBytes;
-            }, (error) => {
-                console.log("error :(")
-            }, () => {
-                console.log("success!!")
-                getDownloadURL(uploadTask.snapshot.ref).then(downloadURL =>{
-                    // Add the downloadURL to the uploadedUrls array
-                    setUploadMediaFileUrls([...uploadMediaFileUrls, downloadURL])
+                uploadTask.on('state_changed', (snapshot) => {
+                }, (error) => {
+                    console.log("error :(")
+                }, () => {
+                    console.log("success!!")
+                    getDownloadURL(uploadTask.snapshot.ref).then(downloadURL => {
+                        // Add the downloadURL to the uploadedUrls array
+                        setDownloadMediaFileUrls([...uploadMediaFileUrls, downloadURL])
+                    })
                 })
             })
-        })
+        }
+
+        if(uploadDocumentFileUrls !== null) {
+            uploadDocumentFileUrls.forEach((file) => {
+                const fileRef = ref(storage, `user-resource/${file.name}_${uuidv4()}`)
+                const uploadTask = uploadBytesResumable(fileRef, file)
+                uploadTask.on('state_changed', (snapshot) => {
+                }, (error) => {
+                    console.log("error :(")
+                }, () => {
+                    console.log("success!!")
+                    getDownloadURL(uploadTask.snapshot.ref).then(downloadURL => {
+                        // Add the downloadURL to the uploadedUrls array
+                        setDownloadDocumentFileUrls([...uploadMediaFileUrls, downloadURL])
+                    })
+                })
+            })
+        }
     }
 
     const handleSubmit = async(e) => {
         e.preventDefault();
+        setLoading(true)
         try {
-            setLoading(true)
-            await postSchema.validate({ caption: post, images: uploadMediaFileUrls }, { abortEarly: false });
+            await postSchema.validate(
+                {
+                    content: formState.content,
+                    images: uploadMediaFileUrls,
+                    documents: uploadDocumentFileUrls,
+                    expectedAmount: formState.expectedAmount,
+                    expectedReceivedDate: formState.expectedReceivedDate,
+                    currencyEnum: formState.currencyEnum,
+                    location: formState.location,
+                    postCategoryEnum: formState.postCategoryEnum,
+                }, { abortEarly: false });
             setErrors({});
-            handlePost();
+            await handlePost();
         } catch (err) {
             const validationErrors = {};
             err.inner.forEach(error => {
@@ -209,26 +259,15 @@ const navigate = useNavigate();
         }
     }
 
+    const handlePolicyCheckboxChange = (event) => {
+        setIsAgreePolicy(event.target.checked);
+    }
+
     const handleBlur = async() => {
         setErrors({});
     }
 
-    const handleChange = async(e) => {
-        setPost(e.target.value)
-        if(post.length > 2){
-            try {
-                await postSchema.validate({ caption: post, medias: uploadMediaFileUrls, documents: uploadDocumentFileUrls }, { abortEarly: false });
-                setErrors({});
-            } catch (err) {
-                const validationErrors = {};
-                err.inner.forEach(error => {
-                    validationErrors[error.path] = error.message;
-                });
-                setErrors(validationErrors);
-            }
-            return;
-        }
-    }
+
 
     return (
         <Box
@@ -267,21 +306,32 @@ const navigate = useNavigate();
                     <form>
                         <TextField
                             id="postContent"
+                            name={"content"}
+                            value={formState.content}
                             label="Share your story here"
                             multiline
                             rows={4}
                             variant="outlined"
+                            onChange={handleFormInputChange}
                             fullWidth
+                            required  // <-- add required attribute
+                            error={errors.content !== undefined}
+                            helperText={errors.content}
                             sx={{
                                 mb: 2,
                             }}
                         />
                         <TextField
                             id="outlined-password-input"
+                            name={"location"}
+                            value={formState.location}
                             label="Address"
                             type="text"
                             variant="outlined"
                             fullWidth
+                            error={errors.location !== undefined}
+                            helperText={errors.location}
+                            onChange={handleFormInputChange}
                             sx={{
                                 mb: 2,
                             }}
@@ -291,11 +341,12 @@ const navigate = useNavigate();
                         <TextField
                             fullWidth
                             id="category"
+                            name={"postCategoryEnum"}
                             variant="outlined"
                             select
                             label="Select category"
-                            value={selectCategory}
-                            onChange={handleChange3}
+                            value={formState.postCategoryEnum}
+                            onChange={handleFormInputChange}
                             sx={{
                                 mb: 2,
                             }}
@@ -310,8 +361,11 @@ const navigate = useNavigate();
 
                         <TextField
                             id="expectedAmount"
+                            name={"expectedAmount"}
+                            value={formState.expectedAmount}
                             label="Expected amount"
                             type="number"
+                            onChange={handleFormInputChange}
                             InputLabelProps={{
                                 shrink: true,
                             }}
@@ -322,8 +376,11 @@ const navigate = useNavigate();
                         />
                         <TextField
                             id="currency"
+                            name={"currencyEnum"}
+                            value={formState.currencyEnum}
                             select
-                            label="Currency"
+                            label="Currency "
+                            onChange={handleFormInputChange}
                             defaultValue="VND"
                             sx={{
                                 mb: 2,
@@ -339,9 +396,11 @@ const navigate = useNavigate();
 
                         <TextField
                             id="date"
+                            name={"expectedReceivedDate"}
                             label="Expected date to get money"
                             type="date"
                             fullWidth
+                            onChange={handleFormInputChange}
                             InputLabelProps={{
                                 shrink: true,
                             }}
@@ -431,8 +490,8 @@ const navigate = useNavigate();
                                             <FlexBetween>
                                                 <FlexBetween>
                                                     <List>
-                                                        {uploadDocumentFiles.map(document, index => (
-                                                            <ListItem key={index}>
+                                                        {uploadDocumentFiles.map(document => (
+                                                            <ListItem>
                                                                 <ListItemAvatar>
                                                                     <Avatar>
                                                                         <FolderIcon />
@@ -466,18 +525,26 @@ const navigate = useNavigate();
 
 
                         <FormControlLabel
-                            control={<Checkbox defaultChecked />}
+                            control={<Checkbox onChange={handlePolicyCheckboxChange} />}
                             label={
                                 <>
                                     I have read and agree with{' '}
-                                    <a target={"_blank"} onClick={navigate(`/policy`)}>tern and policy</a>
+                                    <a target={"_blank"}  href={window.location.origin  + '/policy'}>tern and policy</a>
                                 </>
                             }
                         />
                         <div style={{marginTop: "1rem"}}>
-                            <Button color="primary" variant="contained">
+                            <Button
+                                onClick={handleSubmit}
+                                color="primary"
+                                variant="contained"
+                                disabled={!isAgreePolicy || loading}
+                            >
                                 Submit
-                            </Button>
+                            </Button >
+                            {!isAgreePolicy && (
+                                <p style={{ color: 'red' }}>Please agree to the policy before submitting.</p>
+                            )}
 
                         </div>
                     </form>

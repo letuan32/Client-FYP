@@ -38,20 +38,37 @@ export const loginSchema = yup.object().shape({
 });
 
 export const postSchema = yup.object().shape({
-    caption: yup.string()
-        .required('Caption is required')
+    content: yup.string()
+        .required('Content is required')
         .trim()
-        .max(250, 'Caption must be less than 250 characters')
-        .min(1, 'Caption must be at least 1 character')
+        .min(10, 'Content must be at least 10 character')
         .matches(
             /^[a-zA-Z0-9!\(\)\-\.\?\[\]\_\`\~\;\:\!\@\#\$\%\^\&\*\+\= ',"]+$/,
-            'Caption can only contain letters, numbers, spaces, and the following special characters: !()-.[]_`~;:!@#$%^&*+='
+            'Content can only contain letters, numbers, spaces, and the following special characters: !()-.[]_`~;:!@#$%^&*+='
         ),
-    medias: yup
+    location: yup.string()
+        .required('Location is required')
+        .trim()
+        .max(250, 'Location must be less than 250 characters')
+        .min(10, 'Location must be at least 10 character')
+        .matches(
+            /^[a-zA-Z0-9!\(\)\-\.\?\[\]\_\`\~\;\:\!\@\#\$\%\^\&\*\+\= ',"]+$/,
+            'Location can only contain letters, numbers, spaces, and the following special characters: !()-.[]_`~;:!@#$%^&*+='
+        ),
+    mediaUrls: yup
         .array()
-        .of(yup.mixed()),
-
-    documents: yup
+        .of(yup.string()),
+    documentUrls: yup
         .array()
-        .of(yup.mixed())
+        .of(yup.string()),
+    expectedAmount: yup.number()
+        .nullable()
+        .positive('Expected amount must be a positive number'),
+    expectedReceivedDate: yup.date()
+        .nullable(),
+    postCategoryEnum: yup.number()
+        .required('Post category is required'),
+    currencyEnum: yup.string()
+        .nullable()
+        .required('Currency is required'),
 });

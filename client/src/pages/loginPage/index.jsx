@@ -110,12 +110,13 @@ const Form = () => {
 
         if(loggedInResponse.ok){
           const loggedIn = await loggedInResponse.json();
-          console.log('File: index.jsx, Line 113: ' + JSON.stringify(loggedIn));
+          console.log('File: baseApi.jsx, Line 113: ' + JSON.stringify(loggedIn));
 
           dispatch(
             setLogin({
               user: loggedIn.displayName,
               token: loggedIn.idToken,
+                refreshToken: loggedIn.refreshToken,
             })
           );
 
