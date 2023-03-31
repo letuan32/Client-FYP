@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     useMediaQuery,
@@ -12,6 +12,9 @@ import PaypalButton from "../../components/Payment/PaypalButton";
 import Divider from "@mui/material/Divider";
 import {useSelector} from "react-redux";
 import {useParams} from 'react-router-dom';
+import {setPosts} from "../../state";
+import {timeStampToDate} from "../../utils/formatDate";
+import SinglePostSkeleton from "../../components/Skeletons/SinglePostSkeleton";
 const vndPaymentMethods = [
     {
         value: 3,
@@ -32,20 +35,8 @@ const vndPaymentMethods = [
     }
 ];
 
-const usdPaymentMethods = [
-    {
-        value: 'paypal',
-        label: 'Paypal',
-        isEmbed: true,
-        component: <PaypalButton></PaypalButton>
-    }
-];
 
 const currencies = ['USD', 'VND'];
-const paymentOptions = {
-    USD: usdPaymentMethods,
-    VND: vndPaymentMethods
-}
 
 function getSteps() {
     return ['Select Currency', 'Select Payment Method'];
@@ -54,17 +45,33 @@ function getSteps() {
 const serverUrl =  process.env.REACT_APP_API_GATEWAY
 
 const PostDonation = () => {
+    const token = useSelector((state) => state.token);
+    const userId = useSelector((state) => state.userId);
+
+    const [isLoading, setIsLoading] = useState(true);
     const isNonMobileScreens = useMediaQuery("(min-width: 1000px)");
     const [activeStep, setActiveStep] = useState(0);
     const [currency, setCurrency] = useState(currencies[0]);
     const [amount, setAmount] = useState('');
+    const [post, setPost] = useState(null);
     const [paymentMethod, setPaymentMethod] = useState('');
     const params = useParams();
     const postId = params.id
+    const getPost = async () => {
+        const response = await fetch( serverUrl + "Post/" + postId, {
+            method: "GET",
+            headers: { Authorization: `Bearer ${token}`}
+        });
 
-    const token = useSelector((state) => state.token);
+        var responseData = await response.json();
+        console.log('File: PostDeatailPage.jsx, Line 76:  ' + JSON.stringify(responseData));
+        setPost(responseData);
+        setIsLoading(false)
+    }
 
-
+    useEffect(() => {
+        getPost();
+    },[]);
     const steps = getSteps();
 
     const handleNext = () => {
@@ -83,7 +90,7 @@ const PostDonation = () => {
         setAmount(event.target.value);
         // TODO: Validate
     };
-    const paymentOptionsForCurrency = paymentOptions[currency];
+
 
 
 
@@ -108,8 +115,25 @@ const PostDonation = () => {
         window.open(updatedPost.redirecUrl, '_blank', 'noreferrer');
     };
 
+    const generatePaymentMethodOptions = () => {
+        if(currency === "VND")
+        {
+            return vndPaymentMethods.map((option) => (
+                option.isEmbed ? option.component :
+                    <Button onClick={(event) => handleSelectPaymentMethod(event, option)}>{option.label}</Button>
+            ))
+        }
+        else
+        {
+            return <PaypalButton postId={postId} amount={amount}></PaypalButton>
+        }
+    }
 
 
+    if(isLoading){
+        return  Array.from(new Array(3)).map((el,index) => (<SinglePostSkeleton key={index}/>)
+        )
+    }
     return (
         <Box>
             <Navbar/>
@@ -126,16 +150,21 @@ const PostDonation = () => {
                 >
                     <SinglePostWidget
                         key={uuidv4()}
-                        postId="{id}"
-                        postUserId="{createdById}"
-                        postAuthorUsername="{displayName}"
+                        postId={postId}
+                        postUserId={post?.userId}
+                        postAuthorUsername={post.author.displayName}
                         location="{location}"
-                        caption="{content}"
-                        postImageUrls="{imageUrls}"
-                        userProfilePhoto="{avatarUrl}"
+                        caption={post.content}
+                        postImageUrls={post.imageUrls}
+                        userProfilePhoto={post.author.avatarUrl}
                         likes={5}
-                        commentCount={5}
-                        // createdAt={timeStampToDate(createdAt)}
+                        commentCount={post.numberOfComment}
+                        createdAt={timeStampToDate(post.createdAt)}
+                        expectedReceivedDate={timeStampToDate(post.expectedReceivedDate)}
+                        expectedAmount={post.expectedAmount}
+                        views={post.views}
+                        likes={post.likes}
+                        currency={post.currency}
                     />
                 </Box>
                 <Box
@@ -157,9 +186,8 @@ const PostDonation = () => {
                                                     value={currency}
                                                     onChange={handleCurrencyChange}
                                                 >
-                                                    {currencies.map((currency) => (
-                                                        <MenuItem key={currency} value={currency}>{currency}</MenuItem>
-                                                    ))}
+                                                        <MenuItem key={post.currency} value={post.currency}>{post.currency}</MenuItem>
+
                                                 </Select>
                                                 <TextField
                                                     label="Amount"
@@ -171,12 +199,7 @@ const PostDonation = () => {
                                                 />
                                             </>
                                         ) : (
-                                            <>
-                                                {paymentOptionsForCurrency.map((option) => (
-                                                    option.isEmbed ? option.component :
-                                                    <Button onClick={(event) => handleSelectPaymentMethod(event, option)}>{option.label}</Button>
-                                                ))}
-                                            </>
+                                             generatePaymentMethodOptions()
                                         )}
                                     </FormControl>
 

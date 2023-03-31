@@ -80,6 +80,8 @@ const Form = () => {
             setLogin({
                     user: isRegistered.newUser,
                     token: isRegistered.token,
+                    refreshToken: isRegistered.refreshToken,
+                    userId: isRegistered.localId
               })
            )
            dispatch( setPerson({ person: isRegistered.newUser}))
@@ -117,6 +119,7 @@ const Form = () => {
               user: loggedIn.displayName,
               token: loggedIn.idToken,
                 refreshToken: loggedIn.refreshToken,
+                userId: loggedIn.localId
             })
           );
 

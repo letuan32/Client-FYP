@@ -1,7 +1,7 @@
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { useDispatch, useSelector } from 'react-redux';
-import { setPost} from "../../state";
+import {useNavigate} from "react-router-dom";
+import {useState} from "react";
+import {useDispatch, useSelector} from 'react-redux';
+import {setPost} from "../../state";
 import {fToNow, timeStampToDate} from "../../utils/formatDate";
 
 import {
@@ -25,241 +25,251 @@ import FlexBetween from "../../components/CustomStyledComponents/FlexBetween";
 import Following from "../../components/Following";
 import LikeBox from "../../components/LikeBox"
 import CommentBox from "../../components/Comment/Comment";
-import { useEffect } from "react";
-
+import {useEffect} from "react";
 
 
 const SinglePostWidget = ({
-  postId,
-  postUserId,
-  postAuthorUsername,
-  location,
-  caption,
-  postImageUrls,
-  userProfilePhoto,
-  likes,
-  createdAt,
-  commentCount,
-}) => {
+                              postId,
+                              postUserId,
+                              postAuthorUsername,
+                              location,
+                              caption,
+                              postImageUrls,
+                              userProfilePhoto,
+                              likes,
+                              createdAt,
+                              commentCount,
+                              expectedReceivedDate,
+                              expectedAmount,
+                              numberOfDonations,
+                              views,
+                              currency
+                          }) => {
     const navigate = useNavigate();
-  const [isComments, setIsComments] = useState(false)
-  const [likeData, setLikeData] = useState(null)
-  const [isLongCaption, setIsLongCaption] = useState(false);
-  const isNonMobileScreens = useMediaQuery("(min-width: 800px)");
+    const [isComments, setIsComments] = useState(false)
+    const [likeData, setLikeData] = useState(null)
+    const [isLongCaption, setIsLongCaption] = useState(false);
+    const isNonMobileScreens = useMediaQuery("(min-width: 800px)");
 
 
-  const dispatch = useDispatch();
-  const token = useSelector((state) => state.token);
+    const dispatch = useDispatch();
+    const token = useSelector((state) => state.token);
 
 
-  const { username } = useSelector((state) => state.user)
-  
-  const isLiked = Boolean(likes[username]);
-  const likeCount = Object.keys(likes).length;
+    const {username} = useSelector((state) => state.user)
 
-  const isAuthor = postAuthorUsername === username
+    const isLiked = Boolean(likes[username]);
+    const likeCount = Object.keys(likes).length;
 
-  
-  const { palette } = useTheme();
-  const {  dark } = palette.primary;
-  const { main, medium} = palette.neutral;
+    const isAuthor = postAuthorUsername === username
 
 
-    const serverUrl =  process.env.REACT_APP_ENV === "Development" ? "https://localhost:7010/" : process.env.REACT_APP_API_GATEWAY
+    const {palette} = useTheme();
+    const {dark} = palette.primary;
+    const {main, medium} = palette.neutral;
 
-    
-  const addRemoveLike  = async() => {
-    const response = await fetch( serverUrl + `p/${postId}/likes`,{
-      method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ username  })
-    })
 
-    const updatedPost = await response.json();
-    dispatch(setPost({ post: updatedPost}));
-    getLikes();
+    const serverUrl = process.env.REACT_APP_ENV === "Development" ? "https://localhost:7010/" : process.env.REACT_APP_API_GATEWAY
 
-  }
 
-  const getLikes = async() => {
+    const addRemoveLike = async () => {
+        const response = await fetch(serverUrl + `p/${postId}/likes`, {
+            method: "PATCH",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({username})
+        })
 
-    if(likeCount > 0){
-      // const response = await fetch( serverUrl + `p/${postId}/likes`,{
-      //   method: "GET",
-      //   headers: {
-      //     Authorization: `Bearer ${token}`,
-      //     "Content-Type": "application/json"
-      //   },
-      // })
-  
-      // if(response.ok){
-      //   const likeData = await response.json()
-      //   setLikeData(likeData)
-      // }
+        const updatedPost = await response.json();
+        dispatch(setPost({post: updatedPost}));
+        getLikes();
 
-          const likeData = [{"_id":"63f19345618edabfc8738eb2","username":"mjherzalla","profilePhotoUrl":"https://i.stack.imgur.com/l60Hf.png","id":"63f19345618edabfc8738eb2"}]
-          setLikeData(likeData)
     }
-  }
 
-  const handleCommentToggle = () =>{
-     setIsComments(!isComments)
-  }
+    const getLikes = async () => {
 
-  const handleCaptionToggle = () => {
-     setIsLongCaption(!isLongCaption)
-  }
-  useEffect(() => {
-    getLikes();
-  },[])
+        if (likeCount > 0) {
+            // const response = await fetch( serverUrl + `p/${postId}/likes`,{
+            //   method: "GET",
+            //   headers: {
+            //     Authorization: `Bearer ${token}`,
+            //     "Content-Type": "application/json"
+            //   },
+            // })
+
+            // if(response.ok){
+            //   const likeData = await response.json()
+            //   setLikeData(likeData)
+            // }
+
+            const likeData = [{
+                "_id": "63f19345618edabfc8738eb2",
+                "username": "mjherzalla",
+                "profilePhotoUrl": "https://i.stack.imgur.com/l60Hf.png",
+                "id": "63f19345618edabfc8738eb2"
+            }]
+            setLikeData(likeData)
+        }
+    }
+
+    const handleCommentToggle = () => {
+        setIsComments(!isComments)
+    }
+
+    const handleCaptionToggle = () => {
+        setIsLongCaption(!isLongCaption)
+    }
+    useEffect(() => {
+        getLikes();
+    }, [])
 
 
-  return (
-    <Box 
-      m="0 0 2rem 0"
-      sx={{
-        backgroundColor: palette.background.alt,
-        borderRadius: "0.75rem",
-        padding: isNonMobileScreens ? "1.5rem 1.5rem 0.75rem 1.5rem" : "1.5rem 0"
-      }}
-    >
 
-     <Box
-      sx={{
-        padding:!isNonMobileScreens ? "0 0.75rem" : ""
-      }}
-     >
-        <Following
-                followingId={postUserId} 
-                name={postAuthorUsername} 
-                subtitle={location} 
-                userProfilePhotoUrl={userProfilePhoto}
-                isAuthor={isAuthor}
-            />
-        <Typography color={main} sx={{ mt: "1rem"}}>
-              {caption.length > 100 ? isLongCaption ? caption : `${caption.substring(0, 100)}...` : caption}
-        </Typography>
-        { caption.length > 100 ?  (
-        <Typography 
-        onClick={handleCaptionToggle}
-        sx={{
-          cursor: 'pointer',
-          "&:hover":{
-             color: palette.light
-          }
-        }} color={medium}>
-            {isLongCaption ? 'View less' : 'view More'}
-        </Typography>
-        ) : null}     
-      </Box>     
 
-      {postImageUrls.length ? (
-        <div style={{ display: "flex" , justifyContent: "center", alignItems:"center"}}>
-          <img src={postImageUrls[0].url} alt={postImageUrls[0].filename} style={{
-            borderRadius: isNonMobileScreens ? "0.75rem" : "0",
-            marginTop: "0.75rem",
-            height: '100%',
-            width: '100%'
-          }}/>
-        </div>
-      ) : null}
-      <FlexBetween mt="0.25rem">
-              <FlexBetween gap="1rem">
-                <FlexBetween gap="0.3rem">
-                  <IconButton onClick={addRemoveLike}>
-                    {isLiked ? (
-                      <FavoriteOutlined sx={{ color: dark }} />
-                    ) : (
-                      <FavoriteBorderOutlined />
-                    )}
-                  </IconButton>
-                  <Typography>{likeCount}</Typography>
+    return (
+        <Box
+            m="0 0 2rem 0"
+            sx={{
+                backgroundColor: palette.background.alt,
+                borderRadius: "0.75rem",
+                padding: isNonMobileScreens ? "1.5rem 1.5rem 0.75rem 1.5rem" : "1.5rem 0"
+            }}
+        >
+
+            <Box
+                sx={{
+                    padding: !isNonMobileScreens ? "0 0.75rem" : ""
+                }}
+            >
+                <Following
+                    followingId={postUserId}
+                    name={postAuthorUsername}
+                    subtitle={location}
+                    userProfilePhotoUrl={userProfilePhoto}
+                    isAuthor={isAuthor}
+                />
+                <Typography color={main} sx={{mt: "1rem"}}>
+                    {caption.length > 100 ? isLongCaption ? caption : `${caption.substring(0, 100)}...` : caption}
+                </Typography>
+                {caption.length > 100 ? (
+                    <Typography
+                        onClick={handleCaptionToggle}
+                        sx={{
+                            cursor: 'pointer',
+                            "&:hover": {
+                                color: palette.light
+                            }
+                        }} color={medium}>
+                        {isLongCaption ? 'View less' : 'view More'}
+                    </Typography>
+                ) : null}
+            </Box>
+
+            {postImageUrls.length ? (
+                <div style={{display: "flex", justifyContent: "center", alignItems: "center"}}>
+                    <img src={postImageUrls[0].url} alt={postImageUrls[0].filename} style={{
+                        borderRadius: isNonMobileScreens ? "0.75rem" : "0",
+                        marginTop: "0.75rem",
+                        height: '100%',
+                        width: '100%'
+                    }}/>
+                </div>
+            ) : null}
+            <FlexBetween mt="0.25rem">
+                <FlexBetween gap="1rem">
+                    <FlexBetween gap="0.3rem">
+                        <IconButton onClick={addRemoveLike}>
+                            {isLiked ? (
+                                <FavoriteOutlined sx={{color: dark}}/>
+                            ) : (
+                                <FavoriteBorderOutlined/>
+                            )}
+                        </IconButton>
+                        <Typography>{likeCount}</Typography>
+                    </FlexBetween>
+
+                    <FlexBetween gap="0.3rem">
+                        <IconButton onClick={() => setIsComments(!isComments)}>
+                            <ChatBubbleOutlineOutlined/>
+                        </IconButton>
+                        <Typography>{commentCount}</Typography>
+                    </FlexBetween>
                 </FlexBetween>
 
-                <FlexBetween gap="0.3rem">
-                  <IconButton onClick={() => setIsComments(!isComments)}>
-                    <ChatBubbleOutlineOutlined />
-                  </IconButton>
-                  <Typography>{commentCount}</Typography>
-                </FlexBetween>
-              </FlexBetween>
+                <IconButton>
+                    <ShareOutlined/>
+                </IconButton>
+            </FlexBetween>
 
-              <IconButton>
-                <ShareOutlined />
-              </IconButton>
-      </FlexBetween>
+            {/*TODO: Data from server*/}
+            <FlexBetween mt="0.25rem">
+                <FlexBetween gap="1rem">
+                    <FlexBetween gap="0.3rem">
+                        <IconButton>
+                            <RequestQuoteOutlined></RequestQuoteOutlined>
+                        </IconButton>
+                        <Typography>{expectedAmount} {currency}</Typography>
+                    </FlexBetween>
 
-        {/*TODO: Data from server*/}
-        <FlexBetween mt="0.25rem">
-            <FlexBetween gap="1rem">
-                <FlexBetween gap="0.3rem">
-                    <IconButton>
-                        <RequestQuoteOutlined></RequestQuoteOutlined>
-                    </IconButton>
-                    <Typography>100000 VND</Typography>
-                </FlexBetween>
+                    <FlexBetween gap="0.3rem">
+                        <IconButton>
+                            <PriceCheckOutlined></PriceCheckOutlined>
+                        </IconButton>
+                        {/*TODO: Realtime*/}
+                        <Typography>1000 {currency}</Typography>
+                    </FlexBetween>
 
-                <FlexBetween gap="0.3rem">
-                    <IconButton>
-                        <PriceCheckOutlined></PriceCheckOutlined>
-                    </IconButton>
-                    <Typography>100000 VND</Typography>
-                </FlexBetween>
+                    <FlexBetween gap="0.3rem">
+                        <IconButton
+                            onClick={() => {
+                                navigate(`/post/${postId}}`);
+                                navigate(0);
+                            }}>
+                            <VolunteerActivismOutlined></VolunteerActivismOutlined>
+                            <Typography>Donation</Typography>
 
-                <FlexBetween gap="0.3rem">
-                    <IconButton
-                        onClick={() => {
-                            navigate(`/post/${postId}}`);
-                            navigate(0);
-                        }}>
-                        <VolunteerActivismOutlined></VolunteerActivismOutlined>
-                        <Typography>Donation</Typography>
-
-                    </IconButton>
+                        </IconButton>
+                    </FlexBetween>
                 </FlexBetween>
             </FlexBetween>
-        </FlexBetween>
-      <Box
-      sx={{
-        padding:!isNonMobileScreens ? "0 0.75rem" : ""
-      }}
-     >
-      {/* Liked By  */}
-        {likeData ? (<LikeBox likes={likeData} likeCount={likeCount}/>): null}
+            <Box
+                sx={{
+                    padding: !isNonMobileScreens ? "0 0.75rem" : ""
+                }}
+            >
+                {/* Liked By  */}
+                {likeData ? (<LikeBox likes={likeData} likeCount={likeCount}/>) : null}
 
-        { commentCount ? (
-                    <Typography 
-                    onClick={handleCommentToggle}
-                    sx={{
-                    cursor: 'pointer',
-                    mb:"1rem",
-                    "&:hover":{
-                        color: palette.background.light
-                    }
-                    }} color={medium}>
-                        {!isComments ? `View ${commentCount > 1 ? "all"  + " " + commentCount + " " + "comments" : commentCount + " " + "comment"}` : 'Hide comments'}
+                {commentCount ? (
+                    <Typography
+                        onClick={handleCommentToggle}
+                        sx={{
+                            cursor: 'pointer',
+                            mb: "1rem",
+                            "&:hover": {
+                                color: palette.background.light
+                            }
+                        }} color={medium}>
+                        {!isComments ? `View ${commentCount > 1 ? "all" + " " + commentCount + " " + "comments" : commentCount + " " + "comment"}` : 'Hide comments'}
                     </Typography>
-      ): null}
+                ) : null}
 
 
+                <Typography
+                    fontWeight="200"
+                    fontSize="0.79rem"
+                    marginBottom="1rem"
+                >Posted {fToNow(createdAt)}</Typography>
 
+            </Box>
+            {isComments && (<CommentBox postId={postId}
+                                        commentCount={commentCount}
+                                        isNonMobileScreens={isNonMobileScreens}/>)}
 
-    <Typography
-        fontWeight="200"
-        fontSize="0.79rem"
-        marginBottom="1rem"
-      >Posted {fToNow(createdAt)}</Typography>
-
-      </Box>
-      { isComments && (<CommentBox postId={postId}
-      commentCount={commentCount}
-      isNonMobileScreens={isNonMobileScreens}/>)}
-        
-    </Box>
-  )
+        </Box>
+    )
 }
 
 export default SinglePostWidget
