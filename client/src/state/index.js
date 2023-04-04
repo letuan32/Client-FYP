@@ -87,6 +87,14 @@ export const authSlice = createSlice({
                 state.posts = updatedPosts;
             },
 
+            setProcessingPostId: (state, action) => {
+                const updatedPosts = state.posts.map((post) => {
+                    if (post._id === action.payload.post._id) return action.payload.post;
+                    return post;
+                });
+                state.posts = updatedPosts;
+            },
+
         }
 })
 
@@ -102,5 +110,7 @@ export const {
     setPersonFollowers,
     setPersonFollowing
 } = authSlice.actions;
+
+
 
 export default authSlice.reducer

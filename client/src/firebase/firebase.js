@@ -1,7 +1,8 @@
 import { initializeApp } from "firebase/app";
 import { getStorage } from "firebase/storage"
 import { getFirestore } from "@firebase/firestore"
-
+import { getDatabase } from "firebase/database";
+import { ref, get } from "firebase/database";
 const firebaseConfig = {
     apiKey: "AIzaSyDC-9t_7hpKVhgnjs6T_67CAALOk--su2A",
     authDomain: "tcharity-identity-service.firebaseapp.com",
@@ -17,3 +18,6 @@ const app = initializeApp(firebaseConfig);
 
 export const storage = getStorage(app)
 export const db = getFirestore(app)
+export const realtimeDB = getDatabase(app)
+
+

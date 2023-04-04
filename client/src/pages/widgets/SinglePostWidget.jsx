@@ -224,7 +224,7 @@ const SinglePostWidget = ({
                     <FlexBetween gap="0.3rem">
                         <IconButton
                             onClick={() => {
-                                navigate(`/post/${postId}}`);
+                                navigate(`/post/${postId}`);
                                 navigate(0);
                             }}>
                             <VolunteerActivismOutlined></VolunteerActivismOutlined>

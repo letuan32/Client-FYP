@@ -63,5 +63,13 @@ export function timeStampToDate(timeStamp) {
 
   const date = timestamp.toDate();
   return date;
+}
 
+export function timeStampToDateString(timeStamp) {
+  const timestamp = new Timestamp();
+  timestamp.setSeconds(timeStamp.seconds);
+  timestamp.setNanos(timeStamp.nanos);
+
+  const date = timestamp.toDate();
+  return  format(date, 'dd/MM/yyyy');
 }

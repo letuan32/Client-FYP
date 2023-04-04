@@ -26,6 +26,7 @@ import useTokenExpiration from './utils/checkToken'
 import PostDonation from "./pages/postPage/PostDeatailPage";
 import Navbar from "./components/navbar";
 import TermsAndConditionsPage from "./pages/policypage";
+import BasicTable from "./pages/adminPage";
 
 
 const App = () => { 
@@ -63,6 +64,10 @@ const App = () => {
             <Route path="/post">
               <Route path=":id" element={isLoggedIn ? <PostDonation/> : <Navigate to="/login" />} />
               <Route path="" element={isLoggedIn ? <PostForm/> : <Navigate to="/login" />} />
+            </Route>
+
+            <Route path="/admin">
+              <Route path="approve" element={isLoggedIn ? <BasicTable/> : <BasicTable />} />
             </Route>
 
 

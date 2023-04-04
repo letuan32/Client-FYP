@@ -24,3 +24,14 @@ export const createPostAsync = async (postData) => {
 };
 
 
+export const updatePostApproveStatusAsync = async (postData) => {
+    try {
+        const response = await axiosApiGatewayInstance.post('/post/approve', postData);
+        return response.data;
+    } catch (error) {
+        console.error(error);
+        throw new Error('Failed to update post approve status');
+    }
+};
+
+
