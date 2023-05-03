@@ -1,7 +1,8 @@
 import * as yup from "yup";
 
-
+const phoneRegExp = /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/
 export const registerSchema = yup.object().shape({
+
     username: yup.string()
                 .required('Username is required')
                 .min(8, 'Username must be at least 8 characters long')
@@ -18,13 +19,14 @@ export const registerSchema = yup.object().shape({
                 /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!\(\)\-\.\?\[\]\_\`\~\;\:\!\@\#\$\%\^\&\*\+\=])[a-zA-Z0-9!\(\)\-\.\?\[\]\_\`\~\;\:\!\@\#\$\%\^\&\*\+\=]{8,}$/,
                 'Password must contain at least one lowercase letter, one uppercase letter, one number, and one of the following special characters: !()-.[]_`~;:!@#$%^&*+='
               ),
+    name: yup.string(),
+    phoneNumber: yup.string()
+        .matches(/^\+/, 'Phone number must start with a plus sign')
+        .matches(/^\+\d{10,}$/, 'Phone number must be at least 10 digits long and start with a plus sign')
+        .required('Phone number is required'),
     location: yup.string()
     .required('location is required')
     .matches(/^[a-zA-Z0-9, ]+$/,'Location can only contain letters and numbers'),
-
-    occupation: yup.string()
-    .required('occupation is required')
-    .matches(/^[a-zA-Z0-9 ]+$/,'Occupation can only contain letters and numbers'),
   });
 
 export const loginSchema = yup.object().shape({

@@ -23,10 +23,11 @@ import { registerSchema, loginSchema } from "../../utils/Schemas";
 
 const initialValuesRegister = {
   username: "",
+    name:"",
   email: "",
   password: "",
   location: "",
-  occupation: ""
+  phoneNumber: ""
 };
 
 const initialValuesLogin = {
@@ -52,43 +53,37 @@ const Form = () => {
   console.log(firebaseIdentityUrl);
 
   const serverUrl =  process.env.REACT_APP_ENV === "Development" ? "http://localhost:3001/" : "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyDC-9t_7hpKVhgnjs6T_67CAALOk--su2A"
+    const gatewayUrl =  process.env.REACT_APP_ENV === "Development" ? "https://localhost:7010/" : process.env.REACT_APP_API_GATEWAY
 
 
   const register = async (values, onSubmitProps) => {
-        const { username, email, location, occupation, password} = values;
+      console.log('File: index.jsx, Line 58: API ');
+        const { username, email, location, phoneNumber, password, name} = values;
         setLoading(true)
 
        try{
         const newUserData = await fetch(
-          serverUrl + 'register',
+            gatewayUrl + 'identity/auth/register',
           {
             method:"POST",
             body: JSON.stringify({
-              username
+                name
               ,email
               ,password
               ,location
-              ,occupation
+              ,phoneNumber
             }),
             headers: { 'Content-Type': 'application/json' }
           });
 
         const isRegistered = await newUserData.json();
+console.log('File: index.jsx, Line 80:  ' + isRegistered);
+           console.log('File: index.jsx, Line 80:  ' + JSON.stringify(isRegistered));
 
-         if(isRegistered){
-          dispatch(
-            setLogin({
-                    user: isRegistered.newUser,
-                    token: isRegistered.token,
-                    refreshToken: isRegistered.refreshToken,
-                    userId: isRegistered.localId
-              })
-           )
-           dispatch( setPerson({ person: isRegistered.newUser}))
-         }
-
-        onSubmitProps.resetForm();
-        navigate('/')
+        if(isRegistered){
+            alert("Successfully Registered");
+            setPageType("login");
+        }
        } catch(err){
         console.error(err)
        }
@@ -138,6 +133,7 @@ const Form = () => {
   };
 
   const handleFormSubmit = async (values, onSubmitProps) => {
+      console.log('File: index.jsx, Line 133:  ');
       if(isRegister) await register(values, onSubmitProps)
       if(isLogin) await login(values,onSubmitProps);
   };
@@ -206,6 +202,16 @@ const Form = () => {
                   helperText={touched.username && errors.username}
                   sx={{ gridColumn: "span 4" }}
                 />
+                  <TextField
+                      label="Display Name"
+                      onBlur={handleBlur}
+                      onChange={handleChange}
+                      value={values.name}
+                      name="name"
+                      error={Boolean(touched.name) && Boolean(errors.name)}
+                      helperText={touched.name && errors.name}
+                      sx={{ gridColumn: "span 4" }}
+                  />
                 <TextField
                   label="Location"
                   onBlur={handleBlur}
@@ -217,15 +223,15 @@ const Form = () => {
                   sx={{ gridColumn: "span 4" }}
                 />
                 <TextField
-                  label="Occupation"
+                  label="Phone Number"
                   onBlur={handleBlur}
                   onChange={handleChange}
-                  value={values.occupation}
-                  name="occupation"
+                  value={values.phoneNumber}
+                  name="phoneNumber"
                   error={
-                    Boolean(touched.occupation) && Boolean(errors.occupation)
+                    Boolean(touched.phoneNumber) && Boolean(errors.phoneNumber)
                   }
-                  helperText={touched.occupation && errors.occupation}
+                  helperText={touched.phoneNumber && errors.phoneNumber}
                   sx={{ gridColumn: "span 4" }}
                 />
               </>
