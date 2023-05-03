@@ -8,13 +8,13 @@ import {
 } from "@mui/material";
 
 import {
-  Message,
-  LightMode,
-  DarkMode,
-  Notifications,
-  Help,
-  Menu,
-  Close
+    Message,
+    LightMode,
+    DarkMode,
+    Notifications,
+    Help,
+    Menu,
+    Close, Create
 } from "@mui/icons-material";
 
 import SearchBar from "../SearchBar"
@@ -70,7 +70,7 @@ const Navbar = () => {
             },
           }}
         >
-          Chatter
+          TCharity
         </Typography>
         {isNonMobileScreens && (
           <SearchBar/>
@@ -80,6 +80,7 @@ const Navbar = () => {
       {/* DESKTOP NAV */}
       {isNonMobileScreens ? (
         <FlexBetween gap="2rem">
+            <IconButton onClick={() => navigate('/post')} ><Create></Create></IconButton>
           <IconButton onClick={() => dispatch(setMode())}>
             {theme.palette.mode === "dark" ? (
               <DarkMode sx={{ fontSize: "25px" }} />

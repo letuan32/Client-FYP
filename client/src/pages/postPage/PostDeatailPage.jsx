@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
     Box,
     useMediaQuery,
@@ -12,7 +12,6 @@ import PaypalButton from "../../components/Payment/PaypalButton";
 import Divider from "@mui/material/Divider";
 import {useSelector} from "react-redux";
 import {useParams} from 'react-router-dom';
-import {setPosts} from "../../state";
 import {timeStampToDate} from "../../utils/formatDate";
 import SinglePostSkeleton from "../../components/Skeletons/SinglePostSkeleton";
 const vndPaymentMethods = [
@@ -56,22 +55,25 @@ const PostDonation = () => {
     const [post, setPost] = useState(null);
     const [paymentMethod, setPaymentMethod] = useState('');
     const params = useParams();
-    const postId = params.id
-    const getPost = async () => {
-        const response = await fetch( serverUrl + "Post/" + postId, {
-            method: "GET",
-            headers: { Authorization: `Bearer ${token}`}
-        });
+    const postIdParam = params.id
+    const [postId, setPostId] = useState(postIdParam);
 
-        var responseData = await response.json();
-        console.log('File: PostDeatailPage.jsx, Line 76:  ' + JSON.stringify(responseData));
-        setPost(responseData);
-        setIsLoading(false)
-    }
+
+
 
     useEffect(() => {
+        const getPost = async () => {
+            const response = await fetch( serverUrl + "Post/" + postIdParam, {
+                method: "GET",
+                headers: { Authorization: `Bearer ${token}`}
+            });
+
+            var responseData = await response.json();
+            setPost(responseData);
+            setIsLoading(false)
+        }
         getPost();
-    },[]);
+    },[postId]);
     const steps = getSteps();
 
     const handleNext = () => {
@@ -83,10 +85,12 @@ const PostDonation = () => {
     };
 
     const handleCurrencyChange = (event) => {
+        event.preventDefault();
         setCurrency(event.target.value);
     };
 
     const handleAmountChange = (event) => {
+        event.preventDefault();
         setAmount(event.target.value);
         // TODO: Validate
     };
@@ -103,7 +107,7 @@ const PostDonation = () => {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                postId: postId,
+                postId: postIdParam,
                 amount: amount,
                 bankingType: option.value,
                 paymentService: 1
@@ -125,7 +129,7 @@ const PostDonation = () => {
         }
         else
         {
-            return <PaypalButton postId={postId} amount={amount}></PaypalButton>
+            return <PaypalButton postId={postIdParam} amount={amount}></PaypalButton>
         }
     }
 
@@ -150,20 +154,18 @@ const PostDonation = () => {
                 >
                     <SinglePostWidget
                         key={uuidv4()}
-                        postId={postId}
+                        postId={postIdParam}
                         postUserId={post?.userId}
                         postAuthorUsername={post.author.displayName}
-                        location="{location}"
+                        postAuthorEmail={post.author.email}
+                        location={post.location}
                         caption={post.content}
-                        postImageUrls={post.imageUrls}
+                        mediaUrls={post.mediaUrls}
+                        documentUrls={post.documentUrls}
                         userProfilePhoto={post.author.avatarUrl}
-                        likes={5}
-                        commentCount={post.numberOfComment}
                         createdAt={timeStampToDate(post.createdAt)}
                         expectedReceivedDate={timeStampToDate(post.expectedReceivedDate)}
                         expectedAmount={post.expectedAmount}
-                        views={post.views}
-                        likes={post.likes}
                         currency={post.currency}
                     />
                 </Box>
@@ -191,7 +193,7 @@ const PostDonation = () => {
                                                 </Select>
                                                 <TextField
                                                     label="Amount"
-                                                    value={amount}
+                                                    // value={amount}
                                                     onChange={handleAmountChange}
                                                     type="number"
                                                     fullWidth

@@ -34,4 +34,13 @@ export const updatePostApproveStatusAsync = async (postData) => {
     }
 };
 
+export const paypalCaptureAsync = async (paymentId, postId) => {
+    try {
+        await axiosApiGatewayInstance.post('/donation/paypal-capture', {paymentId: paymentId, postId: postId });
+    } catch (error) {
+        console.error(error);
+        throw new Error('Failed to capture paypal payment');
+    }
+};
+
 

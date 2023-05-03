@@ -1,9 +1,12 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import Carousel from 'react-material-ui-carousel'
 import MediaCard from './MediaCard'
 
 const MediaCarousel = ({mediaUrls}) =>
 {
+    useEffect(() => {
+        console.log('File: MediaCarousel.jsx, Line 8:  ');
+    }, [mediaUrls])
     return (
         <>
             {(mediaUrls.length > 0) && (

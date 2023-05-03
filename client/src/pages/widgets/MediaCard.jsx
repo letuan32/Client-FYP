@@ -2,7 +2,7 @@ import {Card, CardMedia, Typography} from "@mui/material";
 import React from "react";
 
 const MediaCard = ({ mediaUrl }) => {
-    console.log('File: MediaCard.jsx, Line 5:  ');
+
     const mediaType = getMediaType(mediaUrl);
     function getMediaType(url) {
         const extension = url.split('.').pop().toLowerCase();
@@ -24,7 +24,6 @@ const MediaCard = ({ mediaUrl }) => {
                 controls={mediaType === 'video'}
                 title="green iguana"
             />
-            <Typography variant="subtitle1">Caption goes here</Typography>
         </Card>
     );
 };

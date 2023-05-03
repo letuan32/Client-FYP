@@ -159,7 +159,7 @@ const Form = () => {
           cursor: "pointer",
         },
       }}>
-        Chatter
+        TCharity
       </Typography>
 
       {loginError && <Typography fontWeight="bold" sx={{

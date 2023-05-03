@@ -59,6 +59,8 @@ const PostsWidget = ({ username, isProfile = false}) => {
             id,
             author: {email},
             author: {displayName},
+                         mediaUrls,
+                         documentUrls,
             createdById,
             location,
             content,
@@ -66,20 +68,26 @@ const PostsWidget = ({ username, isProfile = false}) => {
             author: {avatarUrl},
             likes,
             numberOfComment,
-             createdAt
+             createdAt,
+                         expectedReceivedDate,
+                         expectedAmount,
+                         currency
         }) => (
             <SinglePostWidget
             key={uuidv4()}
             postId={id}
             postUserId={createdById}
             postAuthorUsername={displayName}
+            postAuthorEmail={email}
             location={location}
             caption={content}
-            postImageUrls={imageUrls}
+            mediaUrls={mediaUrls}
+            documentUrls={documentUrls}
             userProfilePhoto={avatarUrl}
-            likes={5}
-            commentCount={numberOfComment}
             createdAt={timeStampToDate(createdAt)}
+            expectedReceivedDate={timeStampToDate(expectedReceivedDate)}
+            expectedAmount={expectedAmount}
+            currency={currency}
             />
         )
         )

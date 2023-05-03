@@ -56,7 +56,6 @@ const VerifyPostWidget = ({
     const [errorMessage, setErrorMessage] = useState(null);
     const [loading, setLoading] = useState(false);
 
-    console.log('File: VerifyPostWidget.jsx, Line 60:  ' + typeof postImageUrls + JSON.stringify(documentUrls));
     const handlePostApprove = async (isApprove) => {
         setLoading(true)
         if(isApprove === false && (approveMessage === null || approveMessage.trim() === ""))

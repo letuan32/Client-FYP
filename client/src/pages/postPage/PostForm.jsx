@@ -93,10 +93,12 @@ const PostForm = () => {
         mime: ["application/pdf"]
     }
 
+    const mediaUrlArr = [];
     const [uploadMediaFiles, setUploadMediaFiles] =useState(null);
     const [uploadMediaFileUrls, setUploadMediaFileUrls] = useState([]);
     const [downloadMediaFileUrls, setDownloadMediaFileUrls] = useState([]);
 
+    const documentUrlArr = [];
     const [uploadDocumentFiles, setUploadDocumentFiles] = useState(null);
     const [uploadDocumentFileUrls, setUploadDocumentFileUrls] =useState([]);
     const [downloadDocumentFileUrls, setDownloadDocumentFileUrls] = useState([]);
@@ -168,17 +170,11 @@ const PostForm = () => {
         await uploadFilesToFirebase();
 
 
-        setFormState(prevState => ({
-            ...prevState,
-            'documentUrls': downloadDocumentFileUrls,
-            'mediaUrls': downloadMediaFileUrls
-        }));
-
         const postData = {
             content: formState.content,
             location: formState.location,
-            mediaUrls: formState.mediaUrls,
-            documentUrls: formState.documentUrls,
+            mediaUrls: mediaUrlArr,
+            documentUrls: documentUrlArr,
             expectedAmount: Number(formState.expectedAmount),
             expectedReceivedDate: formState.expectedReceivedDate,
             postCategoryEnum: parseInt(formState.postCategoryEnum),
@@ -186,9 +182,15 @@ const PostForm = () => {
         };
         console.log('File: PostForm.jsx, Line 197:  ');
         var createPostResult = await createPostAsync(postData, token, refreshToken);
+        if(createPostResult !== null) {
+            alert("Submit post successfully")
+            window.open('/', '_self')
 
-        const posts = await createPostResult.json();
-        console.log('File: PostForm.jsx, Line 198: handlePost: posts', posts);
+        }
+        else {
+            alert("Submit post failed. Please try again")
+            window.location.reload();
+        }
         setLoading(false);
 
         // dispatch(setPosts({ posts }));
@@ -196,42 +198,48 @@ const PostForm = () => {
         // setPost("")
     }
 
-    const uploadFilesToFirebase = () => {
-        if(uploadMediaFileUrls !== null) {
+    const uploadFilesToFirebase = async () => {
+        const uploadPromises = [];
+        if (uploadMediaFileUrls !== null) {
             uploadMediaFileUrls.forEach((file) => {
-                const fileRef = ref(storage, `user-resource/${file.name}_${uuidv4()}`)
-                const uploadTask = uploadBytesResumable(fileRef, file)
+                const fileRef = ref(storage, `user-resource/${file.name}_${uuidv4()}`);
+                const uploadTask = uploadBytesResumable(fileRef, file);
 
-                uploadTask.on('state_changed', (snapshot) => {
-                }, (error) => {
-                    console.log("error :(")
-                }, () => {
-                    console.log("success!!")
-                    getDownloadURL(uploadTask.snapshot.ref).then(downloadURL => {
-                        // Add the downloadURL to the uploadedUrls array
-                        setDownloadMediaFileUrls([...uploadMediaFileUrls, downloadURL])
-                    })
-                })
-            })
+                const uploadPromise = new Promise((resolve, reject) => {
+                    uploadTask.on('state_changed', (snapshot) => {}, reject, async () => {
+                        uploadTask.on('state_changed', (snapshot) => {}, reject, async () => {
+                            await getDownloadURL(uploadTask.snapshot.ref).then(downloadURL => {
+                                mediaUrlArr.push(downloadURL);
+                            });
+                            resolve();
+                        });
+                    });
+                });
+
+                uploadPromises.push(uploadPromise);
+            });
         }
 
-        if(uploadDocumentFileUrls !== null) {
+        if (uploadDocumentFileUrls !== null) {
             uploadDocumentFileUrls.forEach((file) => {
-                const fileRef = ref(storage, `user-resource/${file.name}_${uuidv4()}`)
-                const uploadTask = uploadBytesResumable(fileRef, file)
-                uploadTask.on('state_changed', (snapshot) => {
-                }, (error) => {
-                    console.log("error :(")
-                }, () => {
-                    console.log("success!!")
-                    getDownloadURL(uploadTask.snapshot.ref).then(downloadURL => {
-                        // Add the downloadURL to the uploadedUrls array
-                        setDownloadDocumentFileUrls([...uploadMediaFileUrls, downloadURL])
-                    })
-                })
-            })
+                const fileRef = ref(storage, `user-resource/${file.name}_${uuidv4()}`);
+                const uploadTask = uploadBytesResumable(fileRef, file);
+
+                const uploadPromise = new Promise((resolve, reject) => {
+                    uploadTask.on('state_changed', (snapshot) => {}, reject, async () => {
+                        await getDownloadURL(uploadTask.snapshot.ref).then(downloadURL => {
+                            documentUrlArr.push(downloadURL);
+                        });
+                        resolve();
+                    });
+                });
+
+                uploadPromises.push(uploadPromise);
+            });
         }
-    }
+        await Promise.all(uploadPromises);
+
+    };
 
     const handleSubmit = async(e) => {
         e.preventDefault();
@@ -240,8 +248,8 @@ const PostForm = () => {
             await postSchema.validate(
                 {
                     content: formState.content,
-                    images: uploadMediaFileUrls,
-                    documents: uploadDocumentFileUrls,
+                    mediaUrls: mediaUrlArr,
+                    documentUrls: documentUrlArr,
                     expectedAmount: formState.expectedAmount,
                     expectedReceivedDate: formState.expectedReceivedDate,
                     currencyEnum: formState.currencyEnum,

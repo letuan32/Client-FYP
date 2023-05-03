@@ -1,5 +1,6 @@
 import { PayPalScriptProvider, PayPalButtons, FUNDING  } from "@paypal/react-paypal-js";
 import {useSelector} from "react-redux";
+import {paypalCaptureAsync} from "../../apiService/baseApi";
 
 const paypalToken =  process.env.REACT_APP_ENV === "Development" ? process.env.REACT_APP_PAYPAL_TOKEN : process.env.REACT_APP_PAYPAL_TOKEN
 const serverUrl =  process.env.REACT_APP_API_GATEWAY
@@ -37,20 +38,22 @@ const PaypalButton = ({postId, amount}) => {
                     amount: {
                         value: amount
                     },
-                    shipping: null,
                     invoice_id: internalTransaction.internalTransactionId,
                     custom_id: userId,
                 },
             ],
+            application_context: {
+                shipping_preference: "NO_SHIPPING"
+            }
         });
     };
 
     const onApprove = (data, actions) => {
         return actions.order.capture().then(function(details) {
             // Show a success message to the buyer
-            console.log('File: PaypalButton.jsx, Line 23:   ' + JSON.stringify(details));
-            console.log('File: PaypalButton.jsx, Line 26: Capture:  ' + JSON.stringify(actions.order.capture()));
-            console.log('File: PaypalButton.jsx, Line 26: Date:  ' + JSON.stringify(data));
+            var paymentId = details.purchase_units[0].payments.captures[0].id;
+            console.log('File: PaypalButton.jsx, Line 26: Capture:  ' + paymentId);
+            paypalCaptureAsync(paymentId, postId, token);
             alert("Transaction completed by " + details.payer.name.given_name + "!");
         });
     };
