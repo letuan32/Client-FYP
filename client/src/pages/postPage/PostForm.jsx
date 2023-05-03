@@ -202,7 +202,7 @@ const PostForm = () => {
         const uploadPromises = [];
         if (uploadMediaFileUrls !== null) {
             uploadMediaFileUrls.forEach((file) => {
-                const fileRef = ref(storage, `user-resource/${file.name}_${uuidv4()}`);
+                const fileRef = ref(storage, `user-resource/${uuidv4()}_${file.name}`);
                 const uploadTask = uploadBytesResumable(fileRef, file);
 
                 const uploadPromise = new Promise((resolve, reject) => {
@@ -222,7 +222,7 @@ const PostForm = () => {
 
         if (uploadDocumentFileUrls !== null) {
             uploadDocumentFileUrls.forEach((file) => {
-                const fileRef = ref(storage, `user-resource/${file.name}_${uuidv4()}`);
+                const fileRef = ref(storage, `user-resource/${uuidv4()}_${file.name}`);
                 const uploadTask = uploadBytesResumable(fileRef, file);
 
                 const uploadPromise = new Promise((resolve, reject) => {
